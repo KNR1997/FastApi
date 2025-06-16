@@ -1,0 +1,6 @@
+fastapi
+sqlalchemy
+mysql-connector-python
+pymysql
+python-dotenv
+psycopg2-binary
