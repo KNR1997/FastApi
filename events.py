@@ -6,6 +6,7 @@ from db.primary_db import PrimarySession
 from models.invoice import Invoice
 from models.invoiceMiddleware import InvoiceMiddlware
 from models.invoiceLastSync import InvoiceLastSync
+from models.user import User
 from enums import EStatus
 
 @repeat_every(seconds=5)
@@ -30,22 +31,30 @@ def sync_invoices():
 
         print('last_synced_id: ', last_synced_id)
 
-        # Step 2: Fetch new invoices from external DB
-        invoices = ext_session.query(InvoiceMiddlware).filter(InvoiceMiddlware.id > last_synced_id).order_by(InvoiceMiddlware.id.asc()).all()
+        # Step 2: Fetch new invoices from external DB with user join
+        invoices = (
+            ext_session.query(InvoiceMiddlware, User.user_name)
+            .join(User, InvoiceMiddlware.usersign == User.user_id)
+            .filter(InvoiceMiddlware.id > last_synced_id)
+            .order_by(InvoiceMiddlware.id.asc())
+            .all()
+        )
+
         print(f"Fetched {len(invoices)} new invoices from external db1")
 
         # Step 3: Sync to primary DB
         max_id = last_synced_id
-        for invoice in invoices:
+        for invoice, user_name in invoices:
             # Add to your main DB (you can upsert if needed)
             primary_session.add(Invoice(
                 id=invoice.id,
                 invoice_number=invoice.docnumber,
                 company_name=invoice.u_wareh,
-                finance_status=EStatus.PENDING,
-                fgs_status=EStatus.PENDING,
+                finance_status='PENDING',
+                fgs_status='PENDING',
                 value=invoice.doctotal,
                 created_at=invoice.docdate,
+                created_user=user_name
             ))
             max_id = max(max_id, invoice.id)
 

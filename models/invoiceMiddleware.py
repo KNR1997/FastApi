@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String
 from db.base import Base
-from pydantic import BaseModel
 
 class InvoiceMiddlware(Base):
     __tablename__ = "oinv"

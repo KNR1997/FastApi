@@ -11,3 +11,4 @@ class Invoice(Base):
     fgs_status = Column(String(100))
     value = Column(String(50))
     created_at = Column(String(50))
+    created_user = Column(String(50))
