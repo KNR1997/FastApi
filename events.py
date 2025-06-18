@@ -1,3 +1,6 @@
+import asyncio
+from fastapi_utilities import repeat_every, repeat_at
+
 from db.external_db1 import ExternalSession1
 from db.primary_db import PrimarySession
 from models.invoice import Invoice
@@ -5,7 +8,18 @@ from models.invoiceMiddleware import InvoiceMiddlware
 from models.invoiceLastSync import InvoiceLastSync
 from enums import EStatus
 
-def sync_invoices_from_external():
+@repeat_every(seconds=5)
+async def load_data():
+    print("Load data")
+
+
+@repeat_at(cron="* * * * *")
+def test_cron_job():
+    print("cron job executed")
+
+
+@repeat_at(cron="* * * * *")
+def sync_invoices():
     ext_session = ExternalSession1()
     primary_session = PrimarySession()
 
